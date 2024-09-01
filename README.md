@@ -1,104 +1,40 @@
-import os
-from datetime import datetime
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
 
-class Task:
-    def __init__(self, description, due_date=None):
-        self.description = description
-        self.due_date = due_date
-        self.completed = False
-        self.created_at = datetime.now()
+data = pd.read_csv('Titanic-Dataset.csv')
+data['Age'].fillna(data['Age'].median(), inplace=True)
+data['Fare'].fillna(data['Fare'].median(), inplace=True)
+data['Cabin'].fillna('Unknown', inplace=True)
 
-    def mark_complete(self):
-        self.completed = True
+data = data[['Survived', 'Pclass', 'Sex', 'Age', 'Fare', 'Cabin']]
 
-    def mark_incomplete(self):
-        self.completed = False
+label_encoder_sex = LabelEncoder() # Create a new LabelEncoder for 'Sex'
+data['Sex'] = label_encoder_sex.fit_transform(data['Sex'])
 
-    def __str__(self):
-        status = "Completed" if self.completed else "Pending"
-        due = f", Due: {self.due_date}" if self.due_date else ""
-        return f"[{status}] {self.description} (Created: {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}{due})"
+label_encoder_cabin = LabelEncoder() # Create a new LabelEncoder for 'Cabin'
+data['Cabin'] = label_encoder_cabin.fit_transform(data['Cabin'])
 
-class ToDoApp:
-    def __init__(self):
-        self.tasks = []
+X = data.drop('Survived', axis=1)
+y = data['Survived']
 
-    def add_task(self, description, due_date=None):
-        task = Task(description, due_date)
-        self.tasks.append(task)
-        print(f"Task '{description}' added to the list.")
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    def view_tasks(self):
-        if not self.tasks:
-            print("No tasks in the list.")
-        else:
-            print("Your to-do list:")
-            for idx, task in enumerate(self.tasks, start=1):
-                print(f"{idx}. {task}")
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
 
-    def remove_task(self, task_number):
-        if 0 < task_number <= len(self.tasks):
-            removed_task = self.tasks.pop(task_number - 1)
-            print(f"Task '{removed_task.description}' removed from the list.")
-        else:
-            print("Invalid task number.")
+accuracy = accuracy_score(y_test, y_pred)
+print(f'Accuracy: {accuracy:.2f}')
 
-    def complete_task(self, task_number):
-        if 0 < task_number <= len(self.tasks):
-            self.tasks[task_number - 1].mark_complete()
-            print(f"Task '{self.tasks[task_number - 1].description}' marked as complete.")
-        else:
-            print("Invalid task number.")
-
-    def incomplete_task(self, task_number):
-        if 0 < task_number <= len(self.tasks):
-            self.tasks[task_number - 1].mark_incomplete()
-            print(f"Task '{self.tasks[task_number - 1].description}' marked as incomplete.")
-        else:
-            print("Invalid task number.")
-
-    def clear_tasks(self):
-        self.tasks.clear()
-        print("All tasks have been cleared.")
-
-def main():
-    app = ToDoApp()
-
-    while True:
-        print("\nTo-Do List Application")
-        print("1. create Task")
-        print("2. View Tasks")
-        print("3. Remove Task")
-        print("4. Mark Task as Complete")
-        print("5. Mark Task as Incomplete")
-        print("6. Clear All Tasks")
-        print("7. Exit")
-
-        choice = input("Enter your choice: ")
-
-        if choice == '1':
-            description = input("Enter the task description: ")
-            due_date = input("Enter the due date (YYYY-MM-DD) or leave blank: ")
-            due_date = due_date if due_date else None
-            app.add_task(description, due_date)
-        elif choice == '2':
-            app.view_tasks()
-        elif choice == '3':
-            task_number = int(input("Enter the task number to remove: "))
-            app.remove_task(task_number)
-        elif choice == '4':
-            task_number = int(input("Enter the task number to mark as complete: "))
-            app.complete_task(task_number)
-        elif choice == '5':
-            task_number = int(input("Enter the task number to mark as incomplete: "))
-            app.incomplete_task(task_number)
-        elif choice == '6':
-            app.clear_tasks()
-        elif choice == '7':
-            print("Exiting the application.")
-            break
-        else:
-            print("Invalid choice. Please try again.")
-
-if __name__ == "__main__":
-    main()
+new_data = pd.DataFrame({
+    'Pclass': [2],
+    'Sex': [label_encoder_sex.transform(['female'])], # Use the correct LabelEncoder for 'Sex'
+    'Age': [30],
+    'Fare': [10],
+    'Cabin': [label_encoder_cabin.transform(['Unknown'])[0]] # Use the correct LabelEncoder for 'Cabin'
+})
+prediction = model.predict(new_data)
+print(f'Survived: {"Yes" if prediction[0] else "No"}')
