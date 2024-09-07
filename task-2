@@ -25,7 +25,7 @@ df_clean = df.dropna(subset=['Rating', 'Votes'])
 # 4.1: Distribution of movie ratings
 plt.figure(figsize=(10, 6))
 sns.histplot(df_clean['Rating'], bins=20, kde=True)
-plt.title('Distribution of IMDb Movie Ratings')nn,
+plt.title('Distribution of IMDb Movie Ratings')
 plt.xlabel('Rating')
 plt.ylabel('Frequency')
 plt.show()
