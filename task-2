@@ -1,0 +1,60 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Step 1: Load the data
+file_path = 'IMDb Movies India.csv'  # Replace with your CSV file path
+# Changed the backslashes to forward slashes or use raw string 
+df = pd.read_csv(file_path, encoding='latin-1') # Added encoding
+
+# Step 2: Basic Exploration
+print("First few rows of the dataset:")
+print(df.head())
+
+print("\nSummary statistics:")
+print(df.describe())
+
+print("\nChecking for missing values:")
+print(df.isnull().sum())
+
+# Step 3: Data Cleaning (if necessary)
+# Dropping rows with missing values in the 'Rating' or 'Votes' columns
+df_clean = df.dropna(subset=['Rating', 'Votes'])
+
+# Step 4: Analysis
+# 4.1: Distribution of movie ratings
+plt.figure(figsize=(10, 6))
+sns.histplot(df_clean['Rating'], bins=20, kde=True)
+plt.title('Distribution of IMDb Movie Ratings')
+plt.xlabel('Rating')
+plt.ylabel('Frequency')
+plt.show()
+
+# 4.2: Average rating by genre
+# Assuming the Genre column contains genres separated by commas
+df_clean['Genre'] = df_clean['Genre'].str.split(',')
+df_genre = df_clean.explode('Genre')
+
+avg_rating_by_genre = df_genre.groupby('Genre')['Rating'].mean().sort_values(ascending=False)
+print("\nAverage rating by genre:")
+print(avg_rating_by_genre)
+
+plt.figure(figsize=(12, 8))
+avg_rating_by_genre.plot(kind='bar')
+plt.title('Average Rating by Genre')
+plt.xlabel('Genre')
+plt.ylabel('Average Rating')
+plt.show()
+
+# 4.3: Top-rated movies by year
+top_rated_by_year = df_clean.loc[df_clean.groupby('Year')['Rating'].idxmax()]
+print("\nTop-rated movies by year:")
+print(top_rated_by_year[['Year', 'Rating']])
+
+# 4.4: Relationship between number of votes and rating
+plt.figure(figsize=(10, 6))
+sns.scatterplot(x='Votes', y='Rating', data=df_clean)
+plt.title('Relationship between Number of Votes and Rating')
+plt.xlabel('Votes')
+plt.ylabel('Rating')
+plt.show()
