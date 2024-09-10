@@ -7,49 +7,26 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
-# Load the dataset
-# Assuming you have the dataset in a CSV file named 'creditcard.csv'
 data = pd.read_csv('creditcard.csv')
-
-# Exploratory Data Analysis (EDA)
-
-# Checking for null values
 print(data.isnull().sum())
-
-# Summary statistics
 print(data.describe())
-
-# Check the distribution of the target variable
 print(data['Class'].value_counts())
-
-# Plotting the distribution of the target variable
 sns.countplot(x='Class', data=data)
 plt.title('Distribution of Fraudulent vs Non-Fraudulent Transactions')
 plt.show()
-
-# Correlation Matrix
 corr_matrix = data.corr()
 plt.figure(figsize=(12, 8))
 sns.heatmap(corr_matrix, annot=False, cmap='coolwarm')
 plt.title('Correlation Matrix')
 plt.show()
-
-# Data Preprocessing
-# Separating the features and the target variable
 X = data.drop('Class', axis=1)
 y = data['Class']
-
-# Splitting the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-
-# Feature Scaling
 scaler = StandardScaler()
 from sklearn.impute import SimpleImputer
 imputer = SimpleImputer(strategy='mean')
 X_train = imputer.fit_transform(X_train)
 X_test = imputer.transform(X_test)
-
-# Model Training
 model = RandomForestClassifier(n_estimators=100, random_state=42)
 from sklearn.impute import SimpleImputer
 imputer = SimpleImputer(strategy='most_frequent') # Use most frequent strategy for classification target
@@ -58,11 +35,7 @@ y_train = y_train.ravel()
 model.fit(X_train, y_train)
 y_test = imputer.transform(y_test.values.reshape(-1, 1))
 y_test = y_test.ravel()
-
-# Model Prediction
 y_pred = model.predict(X_test)
-
-# Evaluation
 print("Confusion Matrix:")
 print(confusion_matrix(y_test, y_pred))
 
@@ -71,8 +44,6 @@ print(classification_report(y_test, y_pred))
 
 print("\nAccuracy Score:")
 print(accuracy_score(y_test, y_pred))
-
-# Feature Importance
 importances = model.feature_importances_
 indices = np.argsort(importances)[::-1]
 
